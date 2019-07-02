@@ -6,6 +6,12 @@
   "scripts": {
     "dev": "next"
   },
+  "husky": {
+    "hooks": {
+      "pre-commit": "eslint . --fix",
+      "pre-push": "eslint . --fix"
+    }
+  },
   "author": "Yididiya H Zike",
   "license": "ISC",
   "dependencies": {
@@ -14,5 +20,16 @@
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "styled-components": "^4.3.2"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.0.2",
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-plugin-import": "^2.18.0",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-prettier": "^3.1.0",
+    "eslint-plugin-react": "^7.14.2",
+    "husky": "^3.0.0",
+    "prettier": "^1.18.2"
   }
 }
