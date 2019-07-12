@@ -1,4 +1,4 @@
-import Login from '../components/UI/Forms/login';
+import Login from '../components/UI/Forms/login-form';
 
 const login = () => (
   <Login />
