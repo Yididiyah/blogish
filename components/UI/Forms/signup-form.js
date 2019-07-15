@@ -60,7 +60,7 @@ class Signup extends Component {
       }
 
       getStatusCode = (response) => {
-        console.log(`Response on Signup Form: ${response.status}`);
+        // console.log(`Response on Signup Form: ${response.status}`);
         this.setState({ responseStatus: response.status });
       }
 
