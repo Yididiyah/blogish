@@ -7,7 +7,7 @@ const input = (props) => {
     <S.Input>
       {/* This is an input and will be controlled input */}
       <input {...props} />
-      <showerror>{error}</showerror>
+      <S.Showerror>{error}</S.Showerror>
     </S.Input>
   );
 };
@@ -38,8 +38,9 @@ S.Input = styled.div`
       background-color: #ccc;
     }
   }
-  & showerror {
-    font-size: 12px;
-    color: red;
-  }
+  
+`;
+S.Showerror = styled.div`
+  font-size: 12px;
+  color: red;
 `;

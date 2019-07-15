@@ -4,7 +4,10 @@
   "description": "An online publishing platform",
   "main": "index.js",
   "scripts": {
-    "dev": "next"
+    "dev": "next",
+    "build": "next build",
+    "export": "next export",
+    "deploy": "cd out && now --public"
   },
   "husky": {
     "hooks": {

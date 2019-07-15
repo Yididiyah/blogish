@@ -2,15 +2,18 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import Input from './Input/Input';
 import { device } from '../../../lib/device';
-import { signupUser } from '../../../lib/auth';
+import { signupUser } from '../../../lib/api/auth';
 
 const initialState = {
+  // to be used for clearing the form for another input
   username: '',
   email: '',
   password: '',
   nameError: '',
   emailError: '',
   passwordError: '',
+  responseStatus: '',
+  errorOnForm: false,
 };
 class Signup extends Component {
     state={
@@ -20,6 +23,8 @@ class Signup extends Component {
       nameError: '',
       emailError: '',
       passwordError: '',
+      responseStatus: '',
+      errorOnForm: false,
 
     }
 
@@ -29,23 +34,74 @@ class Signup extends Component {
         // console.log(`Email: ${email} Password: ${password} Username: ${username}`);
       }
 
-      handleLogin = (event) => {
+      handleSignup = (event) => {
         event.preventDefault();
-        const { email, password, username } = this.state;
+        const {
+          email, password, username, errorOnForm,
+        } = this.state;
+        let responseStatusNo;
         const isValid = this.validate();
         if (isValid) {
-          signupUser(username, email, password);
-          // clear form
-          this.setState(initialState);
+          signupUser(username, email, password).then((response) => {
+            this.getStatusCode(response);
+            responseStatusNo = response.status.toString();
+          }).then(() => {
+            if (!responseStatusNo.startsWith('2')) {
+              this.setState({ errorOnForm: true });
+              this.showErrorMessages(responseStatusNo);
+            }
+          });
+
+          // clear form if there's no error on the form
+          if (!errorOnForm) {
+            this.setState(initialState);
+          }
         }
       }
 
+      getStatusCode = (response) => {
+        console.log(`Response on Signup Form: ${response.status}`);
+        this.setState({ responseStatus: response.status });
+      }
+
+      // showErrorMessages = (responseStatusNo) => {
+
+
+      // }
+
       validate = () => {
-        const {
-          email,
-        } = this.state;
+        let nameError = '';
+        let emailError = '';
+        let passwordError = '';
+
+        const { email, password, username } = this.state;
+        // First check if email includes @ and dot
         if (!email.includes('@')) {
-          this.setState({ emailError: 'Invalid Email' });
+          emailError = 'Invalid Email';
+        }
+        if (!email.includes('.')) {
+          emailError = 'Invalid Email';
+        }
+        // check if password length >= 8
+        if (password.length < 8) {
+          passwordError = 'Password should be at least eight characters';
+        }
+        // then check if email is empty
+        if (!email) {
+          emailError = 'Email is required';
+        }
+        // then if password is empty
+        if (!password) {
+          passwordError = 'Password is required';
+        }
+        // check if username is empty
+        if (!username) {
+          nameError = 'Username is required';
+        }
+
+
+        if (emailError || nameError || passwordError) {
+          this.setState({ emailError, nameError, passwordError });
           return false;
         }
         return true;
@@ -53,14 +109,16 @@ class Signup extends Component {
 
       render() {
         const {
-          email, password, username, nameError, passwordError, emailError,
+          email, password, username, nameError, passwordError, emailError, responseStatus,
         } = this.state;
+
         return (
 
           <S.Signup>
             <h1>Sign up</h1>
-            <form onSubmit={this.handleLogin} noValidate>
+            <form onSubmit={this.handleSignup} noValidate autoComplete="off">
               <Input
+
                 error={nameError}
                 onChange={this.handleChange}
                 value={username}
@@ -69,6 +127,7 @@ class Signup extends Component {
                 placeholder="Username"
               />
               <Input
+                onBlur={this.validate}
                 error={emailError}
                 onChange={this.handleChange}
                 value={email}
@@ -77,6 +136,7 @@ class Signup extends Component {
                 placeholder="Email Address"
               />
               <Input
+                onBlur={this.validate}
                 error={passwordError}
                 onChange={this.handleChange}
                 value={password}
@@ -84,6 +144,7 @@ class Signup extends Component {
                 name="password"
                 placeholder="Create a password"
               />
+              {responseStatus}
               <button type="submit">Sign up</button>
             </form>
           </S.Signup>
