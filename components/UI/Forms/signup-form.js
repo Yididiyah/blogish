@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
+import Router from 'next/router';
+
 import Input from './Input/Input';
 import { device } from '../../../lib/device';
 import { signupUser } from '../../../lib/api/auth';
@@ -13,7 +15,8 @@ const initialState = {
   emailError: '',
   passwordError: '',
   responseStatus: '',
-  errorOnForm: false,
+  formErrorMessage: '',
+  isValid: true,
 };
 class Signup extends Component {
     state={
@@ -23,9 +26,8 @@ class Signup extends Component {
       nameError: '',
       emailError: '',
       passwordError: '',
-      responseStatus: '',
-      errorOnForm: false,
-
+      formErrorMessage: '',
+      isValid: true, // to prevent multiple requests during submission
     }
 
       handleChange = (event) => {
@@ -37,79 +39,124 @@ class Signup extends Component {
       handleSignup = (event) => {
         event.preventDefault();
         const {
-          email, password, username, errorOnForm,
+          email, password, username,
         } = this.state;
-        let responseStatusNo;
-        const isValid = this.validate();
-        if (isValid) {
-          signupUser(username, email, password).then((response) => {
-            this.getStatusCode(response);
-            responseStatusNo = response.status.toString();
-          }).then(() => {
-            if (!responseStatusNo.startsWith('2')) {
-              this.setState({ errorOnForm: true });
-              this.showErrorMessages(responseStatusNo);
-            }
-          });
+        const formValid = this.validate();
+        if (formValid) {
+          let response;
+          // to prevent clicking button when form submission is in progress
+          // disable login button after it is clicked
+          this.setState({ isValid: false });
+          // returns a promise so should be handled accordingly
+          signupUser(username, email, password)
+            .then((result) => {
+              response = result;
+              // enable login button after we get reply from API
+              this.setState({ isValid: true });
+              // console.log('Response on Signup Page:', response);
+              // console.log('Response headers: ', response.headers);
+              if (response.status) {
+                // Send the user to the profile page using the returned token from the
+                // signupUser function
+                Router.push('/profile');
+                // clear form if there's no error on the form
+                this.setState(initialState);
+              }
+              // console.log('Error Response Message on Signup page: ', response.response);
+              if (response.response) {
+                /* If there is a response because there might not be a response.response
+                  (it may be undefiled) if I was blocked by a CORS issue or some other problem.
+                  */
+                this.setState({ formErrorMessage: response.response.data.message });
+              }
+            });
 
-          // clear form if there's no error on the form
-          if (!errorOnForm) {
-            this.setState(initialState);
-          }
-        }
-      }
-
-      getStatusCode = (response) => {
-        // console.log(`Response on Signup Form: ${response.status}`);
-        this.setState({ responseStatus: response.status });
-      }
-
-      // showErrorMessages = (responseStatusNo) => {
-
-
-      // }
-
-      validate = () => {
-        let nameError = '';
-        let emailError = '';
-        let passwordError = '';
-
-        const { email, password, username } = this.state;
-        // First check if email includes @ and dot
-        if (!email.includes('@')) {
-          emailError = 'Invalid Email';
-        }
-        if (!email.includes('.')) {
-          emailError = 'Invalid Email';
-        }
-        // check if password length >= 8
-        if (password.length < 8) {
-          passwordError = 'Password should be at least eight characters';
-        }
-        // then check if email is empty
-        if (!email) {
-          emailError = 'Email is required';
-        }
-        // then if password is empty
-        if (!password) {
-          passwordError = 'Password is required';
-        }
-        // check if username is empty
-        if (!username) {
-          nameError = 'Username is required';
-        }
-
-
-        if (emailError || nameError || passwordError) {
-          this.setState({ emailError, nameError, passwordError });
-          return false;
+          return true;
         }
         return true;
-      };
+      }
+
+       validateUserName = () => {
+         let nameError = '';
+         const { username } = this.state;
+         const regExp = /^[a-zA-Z0-9]{2,52}$/;
+         if (!username) {
+           // check if username is empty
+           nameError = 'Username is required';
+           this.setState({ nameError });
+           return false;
+         } if (!regExp.test(username)) {
+           // check if username is valid
+           nameError = 'Username Invalid';
+           this.setState({ nameError });
+           return false;
+         }
+
+         // if there is no error
+         nameError = '';
+         this.setState({ nameError });
+         return true;
+       }
+
+      validateEmail = () => {
+        let emailError = '';
+        const { email } = this.state;
+        const regExp = /^[a-zA-Z0-9._]+@[a-zA-Z0-9._]+\.[a-zA-Z]{2,4}$/;
+        if (!email) {
+          // check if email is empty
+          emailError = 'Email is required';
+          this.setState({ emailError });
+          return false;
+        } if (!regExp.test(email)) {
+          // check if email conforms to the regExp specified
+          emailError = 'Invalid Email';
+          this.setState({ emailError });
+          return false;
+        }
+        // if there is no error
+        emailError = '';
+        this.setState({ emailError });
+        return true;
+      }
+
+      validatePassword = () => {
+        let passwordError = '';
+        const { password } = this.state;
+        const regExp = /^[a-zA-Z0-9]{8,52}$/;
+
+        if (!password) {
+          // then if password is empty
+          passwordError = 'Password is required';
+          this.setState({ passwordError });
+          return false;
+        } if (password.length < 8) {
+          // if password is less than 8
+          passwordError = 'Password should be at least eight characters';
+          this.setState({ passwordError });
+          return false;
+        } if (!regExp.test(password)) {
+          // if password is greater than 52
+          passwordError = 'Password is invalid';
+          this.setState({ passwordError });
+          return false;
+        }
+
+        passwordError = '';
+        this.setState({ passwordError });
+        return true;
+      }
+
+      validate = () => {
+        if (this.validateEmail() && this.validatePassword() && this.validateUserName()) {
+          return true;
+        }
+        return false;
+      }
 
       render() {
         const {
-          email, password, username, nameError, passwordError, emailError, responseStatus,
+          email, password, username, nameError, passwordError,
+          emailError, formErrorMessage, isValid,
         } = this.state;
 
         return (
@@ -118,7 +165,7 @@ class Signup extends Component {
             <h1>Sign up</h1>
             <form onSubmit={this.handleSignup} noValidate autoComplete="off">
               <Input
-
+                onBlur={this.validateUserName}
                 error={nameError}
                 onChange={this.handleChange}
                 value={username}
@@ -127,7 +174,7 @@ class Signup extends Component {
                 placeholder="Username"
               />
               <Input
-                onBlur={this.validate}
+                onBlur={this.validateEmail}
                 error={emailError}
                 onChange={this.handleChange}
                 value={email}
@@ -136,7 +183,7 @@ class Signup extends Component {
                 placeholder="Email Address"
               />
               <Input
-                onBlur={this.validate}
+                onBlur={this.validatePassword}
                 error={passwordError}
                 onChange={this.handleChange}
                 value={password}
@@ -144,8 +191,8 @@ class Signup extends Component {
                 name="password"
                 placeholder="Create a password"
               />
-              {responseStatus}
-              <button type="submit">Sign up</button>
+              <div>{formErrorMessage}</div>
+              <button disabled={!isValid} type="submit">Sign up</button>
             </form>
           </S.Signup>
         );
@@ -169,7 +216,16 @@ S.Signup = styled.div`
   background-color: red;
   border-radius: 7px;
   color: white;
-  
+}
+
+& button:disabled {
+  background-color: #cccccc;
+}
+
+
+& div {
+  font-size: 16px;
+  color: red;
 }
   @media ${device.mobileM}{
     max-width: 300px;
@@ -179,3 +235,8 @@ S.Signup = styled.div`
     max-width: 500px;
   }
   `;
+
+/* TODO:
+  Search for how and where to save the token sent from server
+  Check which page to go to after Signup
+*/
