@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import Router from 'next/router';
+import Cookie from 'js-cookie';
 
 import Input from './Input/Input';
 import { device } from '../../../lib/device';
@@ -54,7 +55,8 @@ class Signup extends Component {
               // enable login button after we get reply from API
               this.setState({ isValid: true });
               // console.log('Response on Signup Page:', response);
-              // console.log('Response headers: ', response.headers);
+              Cookie.set('auth-token', response.headers.authorization);
+              // console.log('Response headers set on cookie: ', Cookie.get('auth-token'));
               if (response.status) {
                 // Send the user to the profile page using the returned token from the
                 // signupUser function
@@ -62,8 +64,8 @@ class Signup extends Component {
                 // clear form if there's no error on the form
                 this.setState(initialState);
               }
-              // console.log('Error Response Message on Signup page: ', response.response);
               if (response.response) {
+                // console.log('Error Response Message on Signup page: ', response.response);
                 /* If there is a response because there might not be a response.response
                   (it may be undefiled) if I was blocked by a CORS issue or some other problem.
                   */
