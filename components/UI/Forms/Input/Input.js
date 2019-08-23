@@ -1,13 +1,18 @@
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
+import device from '../../../../lib/device';
 
 const input = (props) => {
   const { error } = props;
+  let errorClass = null;
+  if (error) {
+    errorClass = 'error';
+  }
   return (
     <S.Input>
       {/* This is an input and will be controlled input */}
-      <input {...props} />
-      <S.Showerror>{error}</S.Showerror>
+      <input className={errorClass} {...props} />
+      <div className="show-error">{error}</div>
     </S.Input>
   );
 };
@@ -19,18 +24,17 @@ input.propTypes = {
 
 const S = {};
 S.Input = styled.div`
-  margin-top: 10px;
+  box-sizing: border-box;
+  margin-top: 1.2em;
   & input {
     width: 100%;
-    padding: 10px;
+    padding: 1em;
     box-sizing: border-box;
-  }
-  & input {
     outline: none;
     border: 1px solid #ccc;
     background-color: white;
     font: inherit;
-    padding: 6px 10px;
+    padding: 0.5em 1em;
     box-sizing: border-box;
 
     :focus{
@@ -38,9 +42,19 @@ S.Input = styled.div`
       background-color: #ccc;
     }
   }
-  
-`;
-S.Showerror = styled.div`
-  font-size: 12px;
-  color: red;
+  .error {
+    border: 1px solid red;
+  }
+  .show-error {
+      font-size: 1em;
+      color: red;
+    }
+    @media ${device.desktop} {
+      font-size: 1em;
+      /* margin: 1em 2em; */
+    } 
+    @media ${device.mobile} {
+      margin-top: 0.3em;
+      margin-bottom: 0.8em;
+    } 
 `;
