@@ -286,7 +286,7 @@ font-size: 1em;
   padding: 0% 5%;
   /* display: grid; */
   /* background-color: #2196F3; */
-  height: 100vh;
+  /* height: 100vh; */
   width: 100%;
   display: flex;
   max-width: 450px;
