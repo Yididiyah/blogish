@@ -6,6 +6,7 @@ import { signOut } from '../lib/api/auth';
 export default class Logout extends Component {
   componentDidMount() {
     signOut();
+    
     return {};
   }
 
