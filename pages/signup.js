@@ -321,7 +321,7 @@ font-size: 1em;
 .login-button {
   text-decoration: none;
   color: #777;
-  background-color: #fff;
+  background-color: red;
   padding: 0.4em 1.5em;
   text-align: center;
   display: inline-block;
@@ -468,7 +468,7 @@ font-size: 1em;
 .login-button {
   text-decoration: none;
   color: #777;
-  background-color: #fff;
+  background-color: red;
   padding: 0.4em 1.5em;
   text-align: center;
   display: inline-block;
